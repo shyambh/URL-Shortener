@@ -20,21 +20,6 @@ def generate_hash(text: str, length: int):
     return sha256_hash[:length]
 
 
-@app.route("/api/books", methods=["GET"])
-def get_books():
-    return jsonify({"books": books})
-
-
-@app.route("/api/books/<int:book_id>", methods=["GET"])
-def get_book(book_id):
-    book = next((book for book in books if book["id"] == book_id), None)
-
-    if book:
-        return jsonify({"book": book})
-    else:
-        return jsonify({"mesage": "Book not found"}), 404
-
-
 @app.route("/api/shortenurl/<string:url>", methods=["POST"])
 def shorten_url(url):
     calculated_hash = generate_hash(url, 10)
