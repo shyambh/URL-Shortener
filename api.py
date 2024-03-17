@@ -1,18 +1,12 @@
 import hashlib
+import os
 import mysql.connector
 from flask import Flask, jsonify
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
-
-books = [
-    {
-        "id": 1,
-        "title": "Fundamentals of Data Engineering",
-        "author": "Joe Reis, Matt Housely",
-    },
-    {"id": 2, "title": "Tidy First", "author": "Kent Beck"},
-]
+load_dotenv()
 
 
 def generate_hash(text: str, length: int):
@@ -20,13 +14,24 @@ def generate_hash(text: str, length: int):
     return sha256_hash[:length]
 
 
+def make_db_connection():
+    return mysql.connector.connect(os.getenv("MYSQL_CONNECTION_STRING"))
+
+
+def execute_sql(sql: str, *args):
+    db_connection = make_db_connection()
+
+
+def check_if_hash_already_exists(url: str):
+    pass
+
+
 @app.route("/api/shortenurl/<string:url>", methods=["POST"])
 def shorten_url(url):
     calculated_hash = generate_hash(url, 10)
 
-    db_connection = mysql.connector.connect(
-        user="testuser", password="admin", host="127.0.0.1", database="shorten_url"
-    )
+    db_connection = make_db_connection()
+
     cursor = db_connection.cursor()
     add_url_query = """
         insert into shortened_urls (long_url, hash) values (%s,%s)
