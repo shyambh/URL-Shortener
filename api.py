@@ -1,6 +1,7 @@
 import hashlib
 import os
 import mysql.connector
+import mysql_connection
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 
@@ -15,7 +16,7 @@ def generate_hash(text: str, length: int):
 
 
 def make_db_connection():
-    return mysql.connector.connect(os.getenv("MYSQL_CONNECTION_STRING"))
+    return mysql_connection.connect()
 
 
 def execute_sql(sql: str, *args):
@@ -28,22 +29,27 @@ def check_if_hash_already_exists(url: str):
 
 @app.route("/api/shortenurl/<string:url>", methods=["POST"])
 def shorten_url(url):
-    calculated_hash = generate_hash(url, 10)
 
-    db_connection = make_db_connection()
+    try:
+        calculated_hash = generate_hash(url, 10)
 
-    cursor = db_connection.cursor()
-    add_url_query = """
-        insert into shortened_urls (long_url, hash) values (%s,%s)
-    """
-    cursor.execute(add_url_query, (url, calculated_hash))
+        db_connection = make_db_connection()
 
-    db_connection.commit()
+        cursor = db_connection.cursor()
+        add_url_query = """
+            insert into shortened_urls (long_url, hash) values (%s,%s)
+        """
+        cursor.execute(add_url_query, (url, calculated_hash))
 
-    cursor.close()
-    db_connection.close()
+        db_connection.commit()
 
-    return jsonify({"url": f"http://localhost/{calculated_hash}"})
+        cursor.close()
+        db_connection.close()
+
+        return jsonify({"url": f"http://localhost/{calculated_hash}"})
+
+    except:
+        return "Hmm, looks like something's broken...", 500
 
 
 if __name__ == "__main__":
