@@ -14,7 +14,7 @@ print(con_config)
 def connect():
     conn = mysql.connector.connect(**con_config)
     if conn.is_connected():
-        print("Database connection is SUCESSFUL")
+        print("Database connection is SUCCESSFUL")
 
     return conn
 
