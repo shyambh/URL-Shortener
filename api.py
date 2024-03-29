@@ -3,7 +3,7 @@ import os
 import json
 
 from werkzeug.exceptions import HTTPException
-import mysql_connection
+import utils.mysql_connection as mysql_connection
 from flask import Flask, request, jsonify, abort, make_response
 from dotenv import load_dotenv
 
@@ -52,6 +52,10 @@ def shorten_url():
             response = make_response("Long URL missing", 400)
             abort(response)
 
+        elif len(request.get_json()["long_url"]) == 0:
+            response = make_response("Long URL has an empty value", 400)
+            abort(response)
+
         url = request.get_json()["long_url"]
 
         calculated_hash = generate_hash(url, 10)
@@ -74,7 +78,8 @@ def shorten_url():
     except HTTPException as e:
         return e
 
-    except:
+    except Exception as e:
+        print(e)
         return "Hmm, looks like something's broken...", 500
 
 
